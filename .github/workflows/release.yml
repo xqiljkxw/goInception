@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master        # 每次 push master 都构建，追加到最新 Release
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0    # 必须拉完整历史，git describe 才能工作
+
+      # 生成和原项目一样的版本号格式：v1.3.0-61-ge2d4476
+      - name: Get version
+        id: version
+        run: |
+          VERSION=$(git describe --tags --always)
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Version: ${VERSION}"
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22.1'
+
+      # 编译 linux
+      - name: Build linux
+        env:
+          CGO_ENABLED: 0
+          GOOS: linux
+          GOARCH: amd64
+        run: |
+          go build -trimpath -ldflags="-s -w" \
+            -o goInception tidb-server/main.go
+          tar -czf goInception-linux-${{ steps.version.outputs.VERSION }}.tar.gz goInception
+
+      # 编译 macOS
+      - name: Build macOS
+        env:
+          CGO_ENABLED: 0
+          GOOS: darwin
+          GOARCH: amd64
+        run: |
+          go build -trimpath -ldflags="-s -w" \
+            -o goInception tidb-server/main.go
+          tar -czf goInception-macOS-${{ steps.version.outputs.VERSION }}.tar.gz goInception
+
+      # 上传到 Release Assets（没有 tag 时自动创建一个名为 latest 的 Release）
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest          # 固定覆盖 latest 这个 Release
+          name: "Latest Build (${{ steps.version.outputs.VERSION }})"
+          prerelease: true
+          files: |
+            goInception-linux-${{ steps.version.outputs.VERSION }}.tar.gz
+            goInception-macOS-${{ steps.version.outputs.VERSION }}.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
