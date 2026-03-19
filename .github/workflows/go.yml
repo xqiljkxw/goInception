@@ -83,11 +83,11 @@ jobs:
           sudo tar -zxvf gh-ost.tar.gz -C /usr/local/bin/
           sudo chmod +x /usr/local/bin/gh-ost
 
-      # - name: "Build & Test"
-      #   run: |
-      #     # rm -f go.sum
-      #     sudo chmod +x cmd/explaintest/run-tests.sh
-      #     make checklist gotest
+      - name: "Build & Test"
+        run: |
+          # rm -f go.sum
+          sudo chmod +x cmd/explaintest/run-tests.sh
+          make checklist gotest SHORT=1
 
       # - name: Analyze with SonarCloud
       #   uses: sonarsource/sonarcloud-github-action@master
