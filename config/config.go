@@ -368,6 +368,13 @@ type Inc struct {
 	// 格式为drop index,add column等,配置要跳过的子句格式,多个时以逗号分隔
 	IgnoreOscAlterStmt string `toml:"ignore_osc_alter_stmt" json:"ignore_osc_alter_stmt"`
 
+	// 是否检查 ALTER TABLE 必须指定 ALGORITHM（默认 false）
+	CheckAlterAlgorithm bool `toml:"check_alter_algorithm" json:"check_alter_algorithm"`
+
+	// 允许的 DDL ALGORITHM 列表，多个以逗号分隔。为空时不限制具体算法（只要求指定即可）
+	// 可选值: INPLACE, COPY, INSTANT
+	SupportAlterAlgorithm string `toml:"support_alter_algorithm" json:"support_alter_algorithm"`
+
 	// 安全更新是否开启.
 	// -1 表示不做操作,基于远端数据库 [默认值]
 	// 0  表示关闭安全更新

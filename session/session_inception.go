@@ -3495,6 +3495,50 @@ func (s *session) checkAlterTable(node *ast.AlterTableStmt, sql string, mergeOnl
 		return
 	}
 
+	if s.inc.CheckAlterAlgorithm && s.dbVersion >= 80000 && s.dbType == DBTypeMysql {
+		// Validate SupportAlterAlgorithm config values — only DEFAULT/INPLACE/COPY/INSTANT allowed.
+		validAlgorithms := map[string]bool{
+			"DEFAULT": true,
+			"INPLACE": true,
+			"COPY":    true,
+			"INSTANT": true,
+		}
+		if s.inc.SupportAlterAlgorithm != "" {
+			for _, sa := range strings.Split(s.inc.SupportAlterAlgorithm, ",") {
+				sa = strings.ToUpper(strings.TrimSpace(sa))
+				if !validAlgorithms[sa] {
+					s.appendErrorNo(ErrAlterTableAlgorithmInvalidConfig, sa)
+				}
+			}
+		}
+
+		hasAlgorithm := false
+		var algorithmValue ast.AlgorithmType
+		for _, alter := range node.Specs {
+			if alter.Tp == ast.AlterTableAlgorithm {
+				hasAlgorithm = true
+				algorithmValue = alter.Algorithm
+				break
+			}
+		}
+		if !hasAlgorithm {
+			s.appendErrorNo(ErrAlterTableAlgorithmRequired)
+		} else if s.inc.SupportAlterAlgorithm != "" {
+			supportAlgorithms := strings.Split(s.inc.SupportAlterAlgorithm, ",")
+			found := false
+			algStr := algorithmValue.String()
+			for _, sa := range supportAlgorithms {
+				if strings.EqualFold(strings.TrimSpace(sa), algStr) {
+					found = true
+					break
+				}
+			}
+			if !found {
+				s.appendErrorNo(ErrAlterTableAlgorithmNotSupport, algStr, s.inc.SupportAlterAlgorithm)
+			}
+		}
+	}
+
 	for i, alter := range node.Specs {
 		switch alter.Tp {
 		case ast.AlterTableOption:

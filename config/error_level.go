@@ -3,6 +3,9 @@
 package config
 
 type IncLevel struct {
+	ErAlterTableAlgorithmRequired     uint8 `toml:"er_alter_table_algorithm_required" json:"er_alter_table_algorithm_required"`
+	ErAlterTableAlgorithmNotSupport   uint8 `toml:"er_alter_table_algorithm_not_support" json:"er_alter_table_algorithm_not_support"`
+	ErAlterTableAlgorithmInvalidConfig uint8 `toml:"er_alter_table_algorithm_invalid_config" json:"er_alter_table_algorithm_invalid_config"`
 	ErAlterTableOnce                  uint8 `toml:"er_alter_table_once"`
 	ErAutoIncrIdWarning               uint8 `toml:"er_auto_incr_id_warning"`
 	ErAutoincUnsigned                 uint8 `toml:"er_autoinc_unsigned"`
@@ -180,6 +183,9 @@ type IncLevel struct {
 }
 
 var defaultLevel = IncLevel{
+	ErAlterTableAlgorithmRequired:     1,
+	ErAlterTableAlgorithmNotSupport:   1,
+	ErAlterTableAlgorithmInvalidConfig: 2,
 	ErAlterTableOnce:                  1,
 	ErAutoIncrIdWarning:               1,
 	ErAutoincUnsigned:                 1,

@@ -225,6 +225,9 @@ const (
 	ErrIndexNotExisted
 	ErrMaxVarcharLength
 	ErrMaxColumnCount
+	ErrAlterTableAlgorithmRequired
+	ErrAlterTableAlgorithmNotSupport
+	ErrAlterTableAlgorithmInvalidConfig
 	ER_ERROR_LAST
 	ER_TOOL_BASED_UNIQUE_INDEX_WARNING
 )
@@ -419,6 +422,9 @@ var ErrorsDefault = map[ErrorCode]string{
 	ErrIndexNotExisted:                 "Index '%-.64s' does not exist",
 	ErrMaxVarcharLength:                "Column length too big for column '%s' (Custom maximum is %d)",
 	ErrMaxColumnCount:                  "Table '%s' has too many columns(limit %d,current %d)",
+	ErrAlterTableAlgorithmRequired:     "ALTER TABLE must specify ALGORITHM clause.",
+	ErrAlterTableAlgorithmNotSupport:   "ALTER TABLE ALGORITHM '%s' is not allowed. Supported algorithms: '%s'.",
+	ErrAlterTableAlgorithmInvalidConfig: "Invalid value '%s' in support_alter_algorithm. Allowed values are: DEFAULT, INPLACE, COPY, INSTANT.",
 	ER_ERROR_LAST:                      "TheLastError,ByeBye",
 	ER_TOOL_BASED_UNIQUE_INDEX_WARNING: "Existing unique indexes may cause duplicate data loss when executing statements using schema-altering tools. It is recommended to review and assess potential risks.",
 }
@@ -605,6 +611,9 @@ var ErrorsChinese = map[ErrorCode]string{
 	ErrIndexNotExisted:                     "Index '%-.64s' 不存在",
 	ErrMaxVarcharLength:                    "列'%s'指定长度过长(自定义上限为%d)",
 	ErrMaxColumnCount:                      "表'%s'列数过多(上限:%d,当前:%d)",
+	ErrAlterTableAlgorithmRequired:         "ALTER TABLE 必须指定 ALGORITHM 子句.",
+	ErrAlterTableAlgorithmNotSupport:       "ALTER TABLE 指定的 ALGORITHM '%s' 不被允许. 支持的算法: '%s'.",
+	ErrAlterTableAlgorithmInvalidConfig:    "support_alter_algorithm 配置值 '%s' 无效. 允许的值为: DEFAULT, INPLACE, COPY, INSTANT.",
 	ER_TOOL_BASED_UNIQUE_INDEX_WARNING:     "存在唯一索引，使用改表工具执行语句可能导致重复数据丢失，建议复查是否存在风险",
 }
 
@@ -672,6 +681,9 @@ func GetErrorLevel(code ErrorCode) uint8 {
 		ErrImplicitTypeConversion,
 		ErrUseValueExpr,
 		ErrMaxColumnCount,
+		ErrAlterTableAlgorithmRequired,
+		ErrAlterTableAlgorithmNotSupport,
+		ErrAlterTableAlgorithmInvalidConfig,
 		ER_WITH_INSERT_FIELD,
 		ER_TOOL_BASED_UNIQUE_INDEX_WARNING:
 		return 1
@@ -1141,6 +1153,12 @@ func (e ErrorCode) String() string {
 		return "er_max_varchar_length"
 	case ErrMaxColumnCount:
 		return "er_max_column_count"
+	case ErrAlterTableAlgorithmRequired:
+		return "er_alter_table_algorithm_required"
+	case ErrAlterTableAlgorithmNotSupport:
+		return "er_alter_table_algorithm_not_support"
+	case ErrAlterTableAlgorithmInvalidConfig:
+		return "er_alter_table_algorithm_invalid_config"
 	case ER_ERROR_LAST:
 		return "er_error_last"
 	case ER_TOOL_BASED_UNIQUE_INDEX_WARNING:
