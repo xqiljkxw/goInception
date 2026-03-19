@@ -3495,7 +3495,23 @@ func (s *session) checkAlterTable(node *ast.AlterTableStmt, sql string, mergeOnl
 		return
 	}
 
-	if s.inc.CheckAlterAlgorithm {
+	if s.inc.CheckAlterAlgorithm && s.dbVersion >= 80000 && s.dbType == DBTypeMysql {
+		// Validate SupportAlterAlgorithm config values — only DEFAULT/INPLACE/COPY/INSTANT allowed.
+		validAlgorithms := map[string]bool{
+			"DEFAULT": true,
+			"INPLACE": true,
+			"COPY":    true,
+			"INSTANT": true,
+		}
+		if s.inc.SupportAlterAlgorithm != "" {
+			for _, sa := range strings.Split(s.inc.SupportAlterAlgorithm, ",") {
+				sa = strings.ToUpper(strings.TrimSpace(sa))
+				if !validAlgorithms[sa] {
+					s.appendErrorNo(ErrAlterTableAlgorithmInvalidConfig, sa)
+				}
+			}
+		}
+
 		hasAlgorithm := false
 		var algorithmValue ast.AlgorithmType
 		for _, alter := range node.Specs {

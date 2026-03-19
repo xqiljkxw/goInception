@@ -3618,6 +3618,10 @@ func (s *testSessionIncSuite) TestCheckAuditSetting(c *C) {
 }
 
 func (s *testSessionIncSuite) TestAlterTableAlgorithm(c *C) {
+	if s.DBVersion < 80000 {
+		c.Skip("CheckAlterAlgorithm only applies to MySQL 8.0+")
+	}
+
 	config.GetGlobalConfig().Inc.CheckAlterAlgorithm = true
 	config.GetGlobalConfig().Inc.SupportAlterAlgorithm = ""
 	defer func() {
@@ -3644,8 +3648,15 @@ func (s *testSessionIncSuite) TestAlterTableAlgorithm(c *C) {
 	s.testErrorCode(c, sql,
 		session.NewErr(session.ErrAlterTableAlgorithmNotSupport, "COPY", "INPLACE,INSTANT"))
 
-	// CheckAlterAlgorithm=false should skip checks
+	// Invalid value in SupportAlterAlgorithm config should error
+	config.GetGlobalConfig().Inc.SupportAlterAlgorithm = "INPLACE,BADVAL"
+	sql = "drop table if exists t1;create table t1(id int primary key,name varchar(10));alter table t1 add column c1 int, ALGORITHM=INPLACE;"
+	s.testErrorCode(c, sql,
+		session.NewErr(session.ErrAlterTableAlgorithmInvalidConfig, "BADVAL"))
+
+	// CheckAlterAlgorithm=false should skip checks (even on MySQL 8.0)
 	config.GetGlobalConfig().Inc.CheckAlterAlgorithm = false
+	config.GetGlobalConfig().Inc.SupportAlterAlgorithm = ""
 	sql = "drop table if exists t1;create table t1(id int primary key,name varchar(10));alter table t1 add column c1 int;"
 	s.testErrorCode(c, sql)
 }

@@ -227,6 +227,7 @@ ghost_skip_foreign_key_checks = true
 [inc_level]
 er_alter_table_algorithm_required = 1
 er_alter_table_algorithm_not_support = 1
+er_alter_table_algorithm_invalid_config = 2
 er_alter_table_once = 1
 er_auto_incr_id_warning = 1
 er_autoinc_unsigned = 1
