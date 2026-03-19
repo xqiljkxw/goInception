@@ -3616,3 +3616,36 @@ func (s *testSessionIncSuite) TestCheckAuditSetting(c *C) {
 		}
 	}
 }
+
+func (s *testSessionIncSuite) TestAlterTableAlgorithm(c *C) {
+	config.GetGlobalConfig().Inc.CheckAlterAlgorithm = true
+	config.GetGlobalConfig().Inc.SupportAlterAlgorithm = ""
+	defer func() {
+		config.GetGlobalConfig().Inc.CheckAlterAlgorithm = false
+		config.GetGlobalConfig().Inc.SupportAlterAlgorithm = ""
+	}()
+
+	// ALTER TABLE without ALGORITHM should error
+	sql := "drop table if exists t1;create table t1(id int primary key,name varchar(10));alter table t1 add column c1 int;"
+	s.testErrorCode(c, sql,
+		session.NewErr(session.ErrAlterTableAlgorithmRequired))
+
+	// ALTER TABLE with ALGORITHM=INPLACE should pass when no restriction
+	sql = "drop table if exists t1;create table t1(id int primary key,name varchar(10));alter table t1 add column c1 int, ALGORITHM=INPLACE;"
+	s.testErrorCode(c, sql)
+
+	// With allowed list containing INPLACE, ALGORITHM=INPLACE should pass
+	config.GetGlobalConfig().Inc.SupportAlterAlgorithm = "INPLACE,INSTANT"
+	sql = "drop table if exists t1;create table t1(id int primary key,name varchar(10));alter table t1 add column c1 int, ALGORITHM=INPLACE;"
+	s.testErrorCode(c, sql)
+
+	// ALGORITHM=COPY not in allowed list should error
+	sql = "drop table if exists t1;create table t1(id int primary key,name varchar(10));alter table t1 add column c1 int, ALGORITHM=COPY;"
+	s.testErrorCode(c, sql,
+		session.NewErr(session.ErrAlterTableAlgorithmNotSupport, "COPY", "INPLACE,INSTANT"))
+
+	// CheckAlterAlgorithm=false should skip checks
+	config.GetGlobalConfig().Inc.CheckAlterAlgorithm = false
+	sql = "drop table if exists t1;create table t1(id int primary key,name varchar(10));alter table t1 add column c1 int;"
+	s.testErrorCode(c, sql)
+}

@@ -75,6 +75,13 @@ custom_keywords = []
 # 审核列类型变更
 check_column_type_change = true
 
+# 审核 ALTER TABLE 是否指定 ALGORITHM
+check_alter_algorithm = false
+
+# 允许的 ALTER TABLE ALGORITHM 列表，多个以逗号分隔，为空时不限制
+# 可选值: INPLACE, COPY, INSTANT
+support_alter_algorithm = ""
+
 # 表名/索引名前缀
 index_prefix = "idx_"
 uniq_index_prefix = "uniq_"
@@ -218,6 +225,8 @@ ghost_ok_to_drop_table = true
 ghost_skip_foreign_key_checks = true
 
 [inc_level]
+er_alter_table_algorithm_required = 1
+er_alter_table_algorithm_not_support = 1
 er_alter_table_once = 1
 er_auto_incr_id_warning = 1
 er_autoinc_unsigned = 1
