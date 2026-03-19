@@ -60,9 +60,9 @@ jobs:
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: latest          # 固定覆盖 latest 这个 Release
+          tag_name: ${{ steps.version.outputs.VERSION }}
           name: "Latest Build (${{ steps.version.outputs.VERSION }})"
-          prerelease: true
+          prerelease: false
           files: |
             goInception-linux-${{ steps.version.outputs.VERSION }}.tar.gz
             goInception-macOS-${{ steps.version.outputs.VERSION }}.tar.gz
