@@ -2,8 +2,8 @@ name: Release
 
 on:
   push:
-    branches:
-      - master        # 每次 push master 都构建，追加到最新 Release
+    tags:
+      - 'v*'
 
 jobs:
   build:
