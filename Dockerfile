@@ -1,4 +1,3 @@
-FROM hanchuanchuan/goinception:v1.3.0 as baseBuilder
 FROM golang:1.14-alpine as builder
 # MAINTAINER hanchuanchuan <chuanchuanhan@gmail.com>
 
@@ -20,7 +19,7 @@ RUN wget -q -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releas
 COPY bin/goInception /goInception
 # COPY bin/percona-toolkit.tar.gz /tmp/percona-toolkit.tar.gz
 COPY bin/pt-online-schema-change /tmp/pt-online-schema-change
-## COPY bin/gh-ost /tmp/gh-ost
+COPY bin/gh-ost /tmp/gh-ost
 COPY config/config.toml.default /etc/config.toml
 
 # Executable image
@@ -34,7 +33,7 @@ COPY --from=builder /usr/local/bin/dumb-init /usr/local/bin/dumb-init
 
 # COPY --from=builder /tmp/percona-toolkit.tar.gz /tmp/percona-toolkit.tar.gz
 COPY --from=builder /tmp/pt-online-schema-change /usr/local/bin/pt-online-schema-change
-COPY --from=baseBuilder /usr/local/bin/gh-ost /usr/local/bin/gh-ost
+COPY --from=builder /tmp/gh-ost /usr/local/bin/gh-ost
 
 WORKDIR /
 
